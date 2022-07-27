@@ -1,0 +1,19 @@
+{
+  "name": "qa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": ""
+  },
+  "author": "Camden Smith",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CamdenSmithh/Questions-and-Answers.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CamdenSmithh/Questions-and-Answers/issues"
+  },
+  "homepage": "https://github.com/CamdenSmithh/Questions-and-Answers#readme"
+}
