@@ -25,16 +25,10 @@ CREATE TABLE answers (
   answerer_email VARCHAR(60) NOT NULL,
   helpfulness INTEGER NOT NULL DEFAULT 0,
   reported BOOLEAN NOT NULL DEFAULT FALSE
-  -- CONSTRAINT fk_question
-  --   FOREIGN KEY(question_id)
-  --     REFERENCES questions(question_id)
 );
 
 CREATE TABLE photos (
   photo_id SERIAL PRIMARY KEY,
   answer_id INTEGER REFERENCES answers,
   url TEXT NOT NULL
-  -- CONSTRAINT fk_answer
-  --   FOREIGN KEY(answer_id)
-  --     REFERENCES answers(answer_id)
 );
