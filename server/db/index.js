@@ -132,7 +132,6 @@ module.exports = {
   }),
 
   queryPostAnswer: (question_id, body, name, email, photos) => new Promise((resolve, reject) => {
-    console.log('photos: ', photos);
     if (photos) {
       pool.query(
         `
@@ -212,19 +211,61 @@ module.exports = {
     }
   }),
 
-  queryPutQuestionHelpful: () => {
+  queryPutQuestionHelpful: (question_id) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      UPDATE
+        questions
+      SET
+        question_helpfulness = question_helpfulness + 1
+      WHERE
+        question_id = ${question_id}
+      `,
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 
-  },
+  putQuestionReport: (question_id) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      UPDATE
+      `,
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 
-  queryPutAnswerHelpful: () => {
+  queryPutAnswerHelpful: (answer_id) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      UPDATE
+        answers
+      SET
+        helpfulness = helpfulness + 1
+      WHERE
+        answer_id = ${answer_id}
+      `,
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 
-  },
-
-  queryPutAnswerReport: () => {
-
-  },
+  queryPutAnswerReport: (answer_id) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      UPDATE
+      `,
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 };
-
-// pool.query('EXPLAIN ANALYZE SELECT * FROM questions LIMIT 2')
-//   .then((res) => console.log('Pool query success: ', res.rows))
-//   .catch((err) => console.log('Pool query error: ', err));
