@@ -13,14 +13,14 @@ module.exports = {
   queryGetQuestions: (product_id, page = 1, count = 5) => new Promise((resolve, reject) => {
     pool.query(
       `
-      EXPLAIN ANALYZE SELECT
+      SELECT
         questions.question_id,
         questions.question_body,
         questions.question_date,
         questions.asker_name,
         questions.question_helpfulness,
         questions.reported,
-        (SELECT (COALESCE(json_object_agg(
+        (SELECT json_object_agg(
           answers.id,
           json_build_object(
             'id', answers.id,
@@ -28,14 +28,13 @@ module.exports = {
             'date', answers.date,
             'answerer_name', answerer_name,
             'photos',
-            (SELECT (COALESCE(array_agg(json_build_object(
+            (SELECT array_agg(json_build_object(
               'id', answers_photos.id,
-              'url', answers_photos.url)),
-              array[]::json[]))
+              'url', answers_photos.url))
       FROM
         answers_photos
       WHERE
-        answers_photos.id = answers.id)))::json, '{}'))
+        answers_photos.id = answers.id)))
       FROM
         answers
       WHERE
