@@ -33,12 +33,10 @@ module.exports = {
   postAnswer: (req, res) => {
     const { question_id } = req.params;
     const { body, name, email, photos } = req.query;
-    console.log('question_id: ', question_id);
-    console.log('body: ', body);
-    console.log('name: ', name);
-    console.log('email: ', email);
-    console.log('photos: ', photos);
-    res.sendStatus(201);
+
+    db.queryPostAnswer(question_id, body, name, email, photos)
+      .then(() => res.sendStatus(201))
+      .catch((err) => res.status(500).send(err));
   },
 
   putQuestionHelpful: (req, res) => {
