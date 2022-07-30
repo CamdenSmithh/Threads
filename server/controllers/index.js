@@ -23,12 +23,11 @@ module.exports = {
   },
 
   postQuestion: (req, res) => {
-    const { body, name, email, product_id } = req.query;
-    console.log('product_id: ', product_id);
-    console.log('body: ', body);
-    console.log('name: ', name);
-    console.log('email: ', email);
-    res.sendStatus(201);
+    const { product_id, body, name, email } = req.query;
+
+    db.queryPostQuestion(product_id, body, name, email)
+      .then(() => res.sendStatus(201))
+      .catch((err) => res.status(500).send(err));
   },
 
   postAnswer: (req, res) => {
