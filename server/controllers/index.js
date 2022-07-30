@@ -48,6 +48,7 @@ module.exports = {
 
   putQuestionReport: (req, res) => {
     const { question_id } = req.params;
+
     console.log('question_id', question_id);
     res.sendStatus(204);
   },
