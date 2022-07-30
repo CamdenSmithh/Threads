@@ -1,0 +1,31 @@
+{
+  "name": "qa",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server/index.js"
+  },
+  "author": "Camden Smith",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CamdenSmithh/Questions-and-Answers.git"
+  },
+  "bugs": {
+    "url": "https://github.com/CamdenSmithh/Questions-and-Answers/issues"
+  },
+  "homepage": "https://github.com/CamdenSmithh/Questions-and-Answers#readme",
+  "dependencies": {
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.1",
+    "eslint-config-airbnb": "^19.0.4",
+    "express": "^4.18.1",
+    "mongodb": "^4.8.1",
+    "mongoose": "^6.5.0",
+    "nodemon": "^2.0.19",
+    "pg": "^8.7.3",
+    "postgres": "^3.2.4"
+  },
+  "keywords": []
+}
