@@ -17,8 +17,8 @@ CREATE TABLE questions (
 );
 
 CREATE TABLE answers (
-  answer_id SERIAL PRIMARY KEY,
-  question_id INTEGER REFERENCES questions,
+  id SERIAL PRIMARY KEY,
+  question_id INTEGER REFERENCES questions(question_id),
   body VARCHAR(1000) NOT NULL,
   date BIGINT NOT NULL,
   answerer_name VARCHAR(60) NOT NULL,
@@ -28,8 +28,8 @@ CREATE TABLE answers (
 );
 
 CREATE TABLE answers_photos (
-  photo_id SERIAL PRIMARY KEY,
-  answer_id INTEGER REFERENCES answers,
+  id SERIAL PRIMARY KEY,
+  answer_id INTEGER REFERENCES answers(id),
   url TEXT NOT NULL
 );
 
