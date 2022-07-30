@@ -41,8 +41,9 @@ module.exports = {
 
   putQuestionHelpful: (req, res) => {
     const { question_id } = req.params;
-    console.log('question_id', question_id);
-    res.sendStatus(204);
+    db.queryPutQuestionHelpful(question_id)
+      .then(() => res.sendStatus(204))
+      .catch((err) => res.status(500).send(err));
   },
 
   putQuestionReport: (req, res) => {
@@ -53,8 +54,9 @@ module.exports = {
 
   putAnswerHelpful: (req, res) => {
     const { answer_id } = req.params;
-    console.log('answer_id', answer_id);
-    res.sendStatus(204);
+    db.queryPutAnswerHelpful(answer_id)
+      .then(() => res.sendStatus(204))
+      .catch((err) => res.status(500).send(err));
   },
 
   putAnswerReport: (req, res) => {
