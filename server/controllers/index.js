@@ -2,23 +2,24 @@ const db = require('../db');
 
 module.exports = {
   getQuestions: (req, res) => {
-    const { product_id, page, count } = req.query;
+    const { product_id, page = 1, count = 5 } = req.query;
 
     db.queryGetQuestions(product_id, page, count)
       .then((data) => {
         res.status(200).send({ product_id, results: data });
       })
-      .catch((err) => res.status(404).send(err));
+      .catch((err) => res.status(500).send(err));
   },
 
   getAnswers: (req, res) => {
     const { question_id } = req.params;
-    const { page, count } = req.query;
+    const { page = 1, count = 5 } = req.query;
 
-    console.log('question_id: ', question_id);
-    console.log('page: ', page || 1);
-    console.log('count: ', count || 5);
-    res.sendStatus(200);
+    db.queryGetAnswers(question_id, page, count)
+      .then((data) => {
+        res.status(200).send({ question: question_id, page, count, results: data });
+      })
+      .catch((err) => res.status(500).send(err));
   },
 
   postQuestion: (req, res) => {
