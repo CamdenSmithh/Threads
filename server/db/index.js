@@ -131,9 +131,86 @@ module.exports = {
     );
   }),
 
-  queryPostAnswer: () => {
-
-  },
+  queryPostAnswer: (question_id, body, name, email, photos) => new Promise((resolve, reject) => {
+    console.log('photos: ', photos);
+    if (photos) {
+      pool.query(
+        `
+        WITH
+          answer
+        AS
+        (INSERT INTO answers(
+          question_id,
+          body,
+          date,
+          answerer_name,
+          answerer_email,
+          reported,
+          helpfulness
+        )
+        VALUES(
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7
+        )
+        RETURNING
+          answer_id
+        )
+        INSERT INTO answers_photos(
+          answer_id,
+          url
+        )
+        VALUES(
+          (SELECT
+            answer_id
+          FROM
+            answer
+          ),
+          unnest(
+            $8::text[]
+          )
+        )
+        `,
+        [question_id, body, Date.now(), name, email, false, 0, photos],
+        (err) => {
+          if (err) return reject(err);
+          return resolve();
+        },
+      );
+    } else {
+      pool.query(
+        `
+        INSERT INTO answers(
+          question_id,
+          body,
+          date,
+          answerer_name,
+          answerer_email,
+          reported,
+          helpfulness
+        )
+        VALUES(
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7
+          )
+          `,
+        [question_id, body, Date.now(), name, email, false, 0],
+        (err) => {
+          if (err) return reject(err);
+          return resolve();
+        },
+      );
+    }
+  }),
 
   queryPutQuestionHelpful: () => {
 
