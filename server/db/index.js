@@ -16,7 +16,7 @@ module.exports = {
       SELECT
         questions.question_id,
         questions.question_body,
-        to_timestamp(questions.question_date / 1000),
+        to_timestamp(questions.question_date / 1000) question_date,
         questions.asker_name,
         questions.question_helpfulness,
         questions.reported,
@@ -66,13 +66,33 @@ module.exports = {
     pool.query(
       `
       SELECT
-        answers.
+        answers.answer_id,
+        answers.body,
+        to_timestamp(answers.date / 1000) date,
+        answers.answerer_name,
+        answers.helpfulness,
+          (SELECT (COALESCE(array_agg(json_build_object(
+            'id', answers_photos.id,
+            'url', answers_photos.url)),
+            array[]::json[]))
+      FROM
+        answers_photos
+      WHERE
+        answers_photos.answer_id = answers.answer_id)
+      AS
+        photos
       FROM
         answers
       WHERE
-        question_id = ${question_id}
+        answers.question_id = ${question_id}
         AND
         answers.reported = false
+      ORDER BY
+        answers.helpfulness
+      DESC LIMIT
+        ${count}
+      OFFSET
+        ${count * page - count}
       `,
       (err, res) => {
         if (err) return reject(err);
