@@ -101,9 +101,35 @@ module.exports = {
     );
   }),
 
-  queryPostQuestion: () => {
-
-  },
+  queryPostQuestion: (product_id, body, name, email) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      INSERT INTO questions(
+        product_id,
+        question_body,
+        question_date,
+        asker_name,
+        asker_email,
+        reported,
+        question_helpfulness
+      )
+      VALUES(
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7
+      )
+      `,
+      [product_id, body, Date.now(), name, email, false, 0],
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 
   queryPostAnswer: () => {
 
