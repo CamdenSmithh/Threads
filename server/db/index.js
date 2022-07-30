@@ -266,7 +266,11 @@ module.exports = {
     pool.query(
       `
       UPDATE
-
+        answers
+      SET
+        reported = true
+      WHERE
+        answer_id = ${answer_id}
       `,
       (err) => {
         if (err) return reject(err);
