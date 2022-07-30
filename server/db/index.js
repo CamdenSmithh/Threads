@@ -228,10 +228,15 @@ module.exports = {
     );
   }),
 
-  putQuestionReport: (question_id) => new Promise((resolve, reject) => {
+  queryPutQuestionReport: (question_id) => new Promise((resolve, reject) => {
     pool.query(
       `
       UPDATE
+        questions
+      SET
+        reported = true
+      WHERE
+        question_id = ${question_id}
       `,
       (err) => {
         if (err) return reject(err);
