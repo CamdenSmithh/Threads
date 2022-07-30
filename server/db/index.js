@@ -10,35 +10,36 @@ const pool = new Pool({
 });
 
 module.exports = {
-  queryGetQuestions: (product_id, page = 1, count = 5) => new Promise((resolve, reject) => {
+  queryGetQuestions: (product_id, page, count) => new Promise((resolve, reject) => {
     pool.query(
       `
       SELECT
         questions.question_id,
         questions.question_body,
-        questions.question_date,
+        to_timestamp(questions.question_date / 1000),
         questions.asker_name,
         questions.question_helpfulness,
         questions.reported,
-        (SELECT json_object_agg(
-          answers.id,
+        (SELECT (COALESCE(json_object_agg(
+          answers.answer_id,
           json_build_object(
-            'id', answers.id,
+            'id', answers.answer_id,
             'body', answers.body,
-            'date', answers.date,
+            'date', to_timestamp(answers.date / 1000),
             'answerer_name', answerer_name,
             'photos',
-            (SELECT array_agg(json_build_object(
+            (SELECT (COALESCE(array_agg(json_build_object(
               'id', answers_photos.id,
-              'url', answers_photos.url))
+              'url', answers_photos.url)),
+              array[]::json[]))
       FROM
         answers_photos
       WHERE
-        answers_photos.id = answers.id)))
+        answers_photos.answer_id = answers.answer_id)))::json, '{}'))
       FROM
         answers
       WHERE
-        answers.id = questions.question_id)
+        answers.question_id = questions.question_id)
       AS
         answers
       FROM
@@ -61,15 +62,17 @@ module.exports = {
     );
   }),
 
-  queryGetAnswers: (question_id) => new Promise((resolve, reject) => {
+  queryGetAnswers: (question_id, page, count) => new Promise((resolve, reject) => {
     pool.query(
       `
       SELECT
-        id
+        answers.
       FROM
         answers
       WHERE
         question_id = ${question_id}
+        AND
+        answers.reported = false
       `,
       (err, res) => {
         if (err) return reject(err);
