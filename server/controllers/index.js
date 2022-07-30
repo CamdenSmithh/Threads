@@ -48,9 +48,9 @@ module.exports = {
 
   putQuestionReport: (req, res) => {
     const { question_id } = req.params;
-
-    console.log('question_id', question_id);
-    res.sendStatus(204);
+    db.queryPutQuestionReport(question_id)
+      .then(() => res.sendStatus(204))
+      .catch((err) => res.status(500).send(err));
   },
 
   putAnswerHelpful: (req, res) => {
