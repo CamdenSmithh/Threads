@@ -3,7 +3,6 @@ const db = require('../db');
 module.exports = {
   getQuestions: (req, res) => {
     const { product_id, page = 1, count = 5 } = req.query;
-
     db.queryGetQuestions(product_id, page, count)
       .then((data) => {
         res.status(200).send({ product_id, results: data });
@@ -23,8 +22,7 @@ module.exports = {
   },
 
   postQuestion: (req, res) => {
-    const { product_id, body, name, email } = req.query;
-
+    const { product_id, body, name, email } = req.body;
     db.queryPostQuestion(product_id, body, name, email)
       .then(() => res.sendStatus(201))
       .catch((err) => res.status(500).send(err));
@@ -32,7 +30,7 @@ module.exports = {
 
   postAnswer: (req, res) => {
     const { question_id } = req.params;
-    const { body, name, email, photos } = req.query;
+    const { body, name, email, photos } = req.body;
 
     db.queryPostAnswer(question_id, body, name, email, photos)
       .then(() => res.sendStatus(201))
