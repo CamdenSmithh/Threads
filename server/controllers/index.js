@@ -2,66 +2,66 @@ const db = require('../db');
 
 module.exports = {
   getQuestions: (req, res) => {
-    const { product_id, page, count } = req.query;
-
+    const { product_id, page = 1, count = 5 } = req.query;
     db.queryGetQuestions(product_id, page, count)
       .then((data) => {
         res.status(200).send({ product_id, results: data });
       })
-      .catch((err) => res.status(404).send(err));
+      .catch((err) => res.status(500).send(err));
   },
 
   getAnswers: (req, res) => {
     const { question_id } = req.params;
-    const { page, count } = req.query;
+    const { page = 1, count = 5 } = req.query;
 
-    console.log('question_id: ', question_id);
-    console.log('page: ', page || 1);
-    console.log('count: ', count || 5);
-    res.sendStatus(200);
+    db.queryGetAnswers(question_id, page, count)
+      .then((data) => {
+        res.status(200).send({ question: question_id, page, count, results: data });
+      })
+      .catch((err) => res.status(500).send(err));
   },
 
   postQuestion: (req, res) => {
-    const { body, name, email, product_id } = req.query;
-    console.log('product_id: ', product_id);
-    console.log('body: ', body);
-    console.log('name: ', name);
-    console.log('email: ', email);
-    res.sendStatus(201);
+    const { product_id, body, name, email } = req.body;
+    db.queryPostQuestion(product_id, body, name, email)
+      .then(() => res.sendStatus(201))
+      .catch((err) => res.status(500).send(err));
   },
 
   postAnswer: (req, res) => {
     const { question_id } = req.params;
-    const { body, name, email, photos } = req.query;
-    console.log('question_id: ', question_id);
-    console.log('body: ', body);
-    console.log('name: ', name);
-    console.log('email: ', email);
-    console.log('photos: ', photos);
-    res.sendStatus(201);
+    const { body, name, email, photos } = req.body;
+
+    db.queryPostAnswer(question_id, body, name, email, photos)
+      .then(() => res.sendStatus(201))
+      .catch((err) => res.status(500).send(err));
   },
 
   putQuestionHelpful: (req, res) => {
     const { question_id } = req.params;
-    console.log('question_id', question_id);
-    res.sendStatus(204);
+    db.queryPutQuestionHelpful(question_id)
+      .then(() => res.sendStatus(204))
+      .catch((err) => res.status(500).send(err));
   },
 
   putQuestionReport: (req, res) => {
     const { question_id } = req.params;
-    console.log('question_id', question_id);
-    res.sendStatus(204);
+    db.queryPutQuestionReport(question_id)
+      .then(() => res.sendStatus(204))
+      .catch((err) => res.status(500).send(err));
   },
 
   putAnswerHelpful: (req, res) => {
     const { answer_id } = req.params;
-    console.log('answer_id', answer_id);
-    res.sendStatus(204);
+    db.queryPutAnswerHelpful(answer_id)
+      .then(() => res.sendStatus(204))
+      .catch((err) => res.status(500).send(err));
   },
 
   putAnswerReport: (req, res) => {
     const { answer_id } = req.params;
-    console.log('answer_id', answer_id);
-    res.sendStatus(204);
+    db.queryPutAnswerReport(answer_id)
+      .then(() => res.sendStatus(204))
+      .catch((err) => res.status(500).send(err));
   },
 };

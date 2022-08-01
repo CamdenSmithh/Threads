@@ -6,7 +6,7 @@ CREATE DATABASE qa;
 DROP TABLE IF EXISTS questions, answers, photos CASCADE;
 
 CREATE TABLE questions (
-  question_id SERIAL PRIMARY KEY,
+  question_id BIGSERIAL NOT NULL PRIMARY KEY,
   product_id INTEGER NOT NULL,
   question_body VARCHAR(1000) NOT NULL,
   question_date BIGINT NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE questions (
 );
 
 CREATE TABLE answers (
-  id SERIAL PRIMARY KEY,
+  answer_id BIGSERIAL NOT NULL PRIMARY KEY,
   question_id INTEGER REFERENCES questions(question_id),
   body VARCHAR(1000) NOT NULL,
   date BIGINT NOT NULL,
@@ -28,8 +28,8 @@ CREATE TABLE answers (
 );
 
 CREATE TABLE answers_photos (
-  id SERIAL PRIMARY KEY,
-  answer_id INTEGER REFERENCES answers(id),
+  id BIGSERIAL NOT NULL PRIMARY KEY,
+  answer_id INTEGER REFERENCES answers(answer_id),
   url TEXT NOT NULL
 );
 
@@ -40,3 +40,9 @@ CREATE INDEX answers_photos_photos_id ON answers_photos (answer_id);
 \COPY questions FROM 'server/data/questions.csv' delimiter ',' CSV HEADER;
 \COPY answers FROM 'server/data/answers.csv' delimiter ',' CSV HEADER;
 \COPY answers_photos FROM 'server/data/answers_photos.csv' delimiter ',' CSV HEADER;
+
+SELECT SETVAL((SELECT PG_GET_SERIAL_SEQUENCE('questions', 'question_id')), (SELECT (MAX(question_id) + 1) FROM questions), FALSE);
+
+SELECT SETVAL((SELECT PG_GET_SERIAL_SEQUENCE('answers', 'answer_id')), (SELECT (MAX(answer_id) + 1) FROM answers), FALSE);
+
+SELECT SETVAL((SELECT PG_GET_SERIAL_SEQUENCE('answers_photos', 'id')), (SELECT (MAX(id) + 1) FROM answers_photos), FALSE);

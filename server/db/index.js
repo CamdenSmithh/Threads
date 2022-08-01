@@ -10,22 +10,22 @@ const pool = new Pool({
 });
 
 module.exports = {
-  queryGetQuestions: (product_id, page = 1, count = 5) => new Promise((resolve, reject) => {
+  queryGetQuestions: (product_id, page, count) => new Promise((resolve, reject) => {
     pool.query(
       `
-      EXPLAIN ANALYZE SELECT
+      SELECT
         questions.question_id,
         questions.question_body,
-        questions.question_date,
+        to_timestamp(questions.question_date / 1000) question_date,
         questions.asker_name,
         questions.question_helpfulness,
         questions.reported,
         (SELECT (COALESCE(json_object_agg(
-          answers.id,
+          answers.answer_id,
           json_build_object(
-            'id', answers.id,
+            'id', answers.answer_id,
             'body', answers.body,
-            'date', answers.date,
+            'date', to_timestamp(answers.date / 1000),
             'answerer_name', answerer_name,
             'photos',
             (SELECT (COALESCE(array_agg(json_build_object(
@@ -35,11 +35,11 @@ module.exports = {
       FROM
         answers_photos
       WHERE
-        answers_photos.id = answers.id)))::json, '{}'))
+        answers_photos.answer_id = answers.answer_id)))::json, '{}'))
       FROM
         answers
       WHERE
-        answers.id = questions.question_id)
+        answers.question_id = questions.question_id)
       AS
         answers
       FROM
@@ -62,15 +62,37 @@ module.exports = {
     );
   }),
 
-  queryGetAnswers: (question_id) => new Promise((resolve, reject) => {
+  queryGetAnswers: (question_id, page, count) => new Promise((resolve, reject) => {
     pool.query(
       `
       SELECT
-        id
+        answers.answer_id,
+        answers.body,
+        to_timestamp(answers.date / 1000) date,
+        answers.answerer_name,
+        answers.helpfulness,
+          (SELECT (COALESCE(array_agg(json_build_object(
+            'id', answers_photos.id,
+            'url', answers_photos.url)),
+            array[]::json[]))
+      FROM
+        answers_photos
+      WHERE
+        answers_photos.answer_id = answers.answer_id)
+      AS
+        photos
       FROM
         answers
       WHERE
-        question_id = ${question_id}
+        answers.question_id = ${question_id}
+        AND
+        answers.reported = false
+      ORDER BY
+        answers.helpfulness
+      DESC LIMIT
+        ${count}
+      OFFSET
+        ${count * page - count}
       `,
       (err, res) => {
         if (err) return reject(err);
@@ -79,27 +101,181 @@ module.exports = {
     );
   }),
 
-  queryPostQuestion: () => {
+  queryPostQuestion: (product_id, body, name, email) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      INSERT INTO questions(
+        product_id,
+        question_body,
+        question_date,
+        asker_name,
+        asker_email,
+        reported,
+        question_helpfulness
+      )
+      VALUES(
+        $1,
+        $2,
+        $3,
+        $4,
+        $5,
+        $6,
+        $7
+      )
+      `,
+      [product_id, body, Date.now(), name, email, false, 0],
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 
-  },
+  queryPostAnswer: (question_id, body, name, email, photos) => new Promise((resolve, reject) => {
+    if (photos) {
+      pool.query(
+        `
+        WITH
+          answer
+        AS
+        (INSERT INTO answers(
+          question_id,
+          body,
+          date,
+          answerer_name,
+          answerer_email,
+          reported,
+          helpfulness
+        )
+        VALUES(
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7
+        )
+        RETURNING
+          answer_id
+        )
+        INSERT INTO answers_photos(
+          answer_id,
+          url
+        )
+        VALUES(
+          (SELECT
+            answer_id
+          FROM
+            answer
+          ),
+          unnest(
+            $8::text[]
+          )
+        )
+        `,
+        [question_id, body, Date.now(), name, email, false, 0, photos],
+        (err) => {
+          if (err) return reject(err);
+          return resolve();
+        },
+      );
+    } else {
+      pool.query(
+        `
+        INSERT INTO answers(
+          question_id,
+          body,
+          date,
+          answerer_name,
+          answerer_email,
+          reported,
+          helpfulness
+        )
+        VALUES(
+          $1,
+          $2,
+          $3,
+          $4,
+          $5,
+          $6,
+          $7
+          )
+          `,
+        [question_id, body, Date.now(), name, email, false, 0],
+        (err) => {
+          if (err) return reject(err);
+          return resolve();
+        },
+      );
+    }
+  }),
 
-  queryPostAnswer: () => {
+  queryPutQuestionHelpful: (question_id) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      UPDATE
+        questions
+      SET
+        question_helpfulness = question_helpfulness + 1
+      WHERE
+        question_id = ${question_id}
+      `,
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 
-  },
+  queryPutQuestionReport: (question_id) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      UPDATE
+        questions
+      SET
+        reported = true
+      WHERE
+        question_id = ${question_id}
+      `,
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 
-  queryPutQuestionHelpful: () => {
+  queryPutAnswerHelpful: (answer_id) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      UPDATE
+        answers
+      SET
+        helpfulness = helpfulness + 1
+      WHERE
+        answer_id = ${answer_id}
+      `,
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 
-  },
-
-  queryPutAnswerHelpful: () => {
-
-  },
-
-  queryPutAnswerReport: () => {
-
-  },
+  queryPutAnswerReport: (answer_id) => new Promise((resolve, reject) => {
+    pool.query(
+      `
+      UPDATE
+        answers
+      SET
+        reported = true
+      WHERE
+        answer_id = ${answer_id}
+      `,
+      (err) => {
+        if (err) return reject(err);
+        return resolve();
+      },
+    );
+  }),
 };
-
-// pool.query('EXPLAIN ANALYZE SELECT * FROM questions LIMIT 2')
-//   .then((res) => console.log('Pool query success: ', res.rows))
-//   .catch((err) => console.log('Pool query error: ', err));
